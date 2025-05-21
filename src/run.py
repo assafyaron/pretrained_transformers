@@ -74,6 +74,7 @@ else:
 # Perform pretraining, finetuning, or evaluation
 if args.function == 'pretrain':
     assert args.writing_params_path is not None
+    
     # TODO [part f]:
     # - Given:
     #     1. A corpus specified in args.pretrain_corpus_path
@@ -112,6 +113,7 @@ if args.function == 'pretrain':
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
     assert args.finetune_corpus_path is not None
+
     # TODO [part c] [part f]:
     # - Given:
     #     1. A finetuning corpus specified in args.finetune_corpus_path
