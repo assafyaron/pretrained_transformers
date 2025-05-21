@@ -167,8 +167,42 @@ class CharCorruptionDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # TODO [part e]: see spec above
-        raise NotImplementedError
+
+         # Get the document line
+        doc = self.data[idx]
+
+        # Randomly truncate doc len between (4,112)
+        min_len = 4
+        max_len = int(self.block_size * 7 / 8) # Leave room for MASK_CHARs
+        trunc_len = random.randint(min_len,max_len)
+        truncated = doc[:trunc_len]
+
+        # Randomly pick masked_content length around 1/4 of truncated length
+        fourth_trunc_len = len(truncated)//4
+        mask_len = random.randint(1,2*fourth_trunc_len+1)
+        mask_strt = random.randint(0, mask_len) # Random index to start masked_content
+
+        # Split into prefix, masked_content, suffix
+        prefix = truncated[:mask_strt]
+        masked_content = truncated[mask_strt:mask_strt + mask_len]
+        suffix = truncated[mask_strt + mask_len:]
+
+        # Create masked_string:
+        # [prefix] MASK_CHAR [suffix] MASK_CHAR [masked_content] [pads]
+        masked_str = prefix + self.MASK_CHAR + suffix + self.MASK_CHAR + masked_content
+        # pad with PAD_CHAR to self.block_size length
+        pad_len = self.block_size - len(masked_str)
+        masked_str += self.PAD_CHAR * pad_len
+
+        # Input x, output y
+        y_str = masked_str[1:]
+        x_str = masked_str[:-1]
+
+        # Encode to tensor using stoi
+        x = torch.LongTensor([self.stoi[c] for c in x_str])
+        y = torch.LongTensor([self.stoi[c] for c in y_str])
+
+        return x, y
 
 """
 Code under here is strictly for your debugging purposes; feel free to modify
